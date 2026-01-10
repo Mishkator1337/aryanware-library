@@ -5389,7 +5389,6 @@ do
 				end
 			end
 		end
-	end
 end
 
 getgenv().Library = Library
