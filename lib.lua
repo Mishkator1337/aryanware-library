@@ -450,10 +450,7 @@ do
 				NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
 				NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
 
-				self:Tween(
-					TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
-					{ Position = UDim2New(0, NewX, 0, NewY) }
-				)
+				Gui.Position = UDim2New(0, NewX, 0, NewY)
 			end
 
 			local InputChanged
@@ -5390,7 +5387,7 @@ do
 			end
 		end
 	end
---end
---hehe						
+end
+
 getgenv().Library = Library
 return Library 
