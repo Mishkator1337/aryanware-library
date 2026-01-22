@@ -525,6 +525,20 @@ local Library do
             local DragStart
             local StartPos
         
+            local Set = function(input)
+                local Delta = input.Position - DragStart
+                local NewX = StartPos.X.Offset + Delta.X
+                local NewY = StartPos.Y.Offset + Delta.Y
+        
+                local ScreenSize = Gui.Parent.AbsoluteSize
+                local GuiSize = Gui.AbsoluteSize
+        
+                NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
+                NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
+        
+                self:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, NewX, 0, NewY)})
+            end
+        
             self:Connect("InputBegan", function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     Dragging = true
@@ -543,16 +557,11 @@ local Library do
         
             Library:Connect(UserInputService.InputChanged, function(input)
                 if Dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                    local Delta = input.Position - DragStart
-                    
-                    Gui.Position = UDim2.new(
-                        StartPos.X.Scale,
-                        StartPos.X.Offset + Delta.X,
-                        StartPos.Y.Scale,
-                        StartPos.Y.Offset + Delta.Y
-                    )
+                    Set(input)
                 end
             end)
+        
+            return Dragging
         end
         
         Instances.MakeResizeable = function(self, Minimum, Maximum)
