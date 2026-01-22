@@ -632,6 +632,8 @@ local Library do
                 CurrentSide = Side 
 
                 StartMouse = UserInputService:GetMouseLocation()
+
+                -- store offsets, not absolute screen pos
                 StartPosition = Vector2New(Gui.Position.X.Offset, Gui.Position.Y.Offset)
                 StartSize = Vector2New(Gui.Size.X.Offset, Gui.Size.Y.Offset)
                 
@@ -2957,6 +2959,11 @@ local Library do
             Elements = { }
         }
 
+        -- ✅ Инициализируем массив SubPages для Page, если его нет
+        if not self.SubPages then
+            self.SubPages = { }
+        end
+
         local Items = { } do
             Items["Inactive"] = Instances:Create("TextButton", {
                 Parent = SubPage.Page.Elements["SubTabs"].Instance,
@@ -3044,7 +3051,7 @@ local Library do
                 BorderColor3 = FromRGB(0, 0, 0),
                 Size = UDim2New(1, 0, 1, 0),
                 BorderSizePixel = 0,
-                Visible = false,
+                Visible = false,  -- ✅ По умолчанию скрыта
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
 
@@ -3104,16 +3111,19 @@ local Library do
             end
         end
 
+        -- ✅ НОВАЯ упрощенная функция Turn
         function SubPage:Turn(Bool)
             SubPage.Active = Bool
 
             if Bool then 
+                -- Показываем эту SubPage
                 Items["Subtab"].Instance.Visible = true
                 Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Accent, ImageTransparency = 0})
                 Items["Hide"].Instance.Visible = true
                 Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
                 Items["Inactive"].Instance.Size = UDim2New(1, 0, 1, 1)
             else
+                -- Скрываем эту SubPage
                 Items["Subtab"].Instance.Visible = false
                 Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Text, ImageTransparency = 0.35})
                 Items["Hide"].Instance.Visible = false
@@ -3122,12 +3132,15 @@ local Library do
             end
         end
 
+        -- ✅ Клик по кнопке SubPage
         Items["Inactive"]:Connect("MouseButton1Down", function()
+            -- Перебираем только SubPages этой Page
             for Index, Value in SubPage.Page.SubPages do
                 Value:Turn(Value == SubPage)
             end
         end)
 
+        -- ✅ Первая SubPage активна по умолчанию
         if #SubPage.Page.SubPages == 0 then 
             SubPage:Turn(true)
         end
@@ -3484,7 +3497,7 @@ local Library do
             end
 
             SubItems["Inactive"]:Connect("MouseButton1Down", function()
-                for Index, Value in SubPage.Page.SubPages do
+                for Index, Value in SubPage.Page.SubPages do  -- ✅ Перебирает только SubPages своей Page
                     Value:Turn(Value == SubPage)
                 end
             end)
