@@ -2040,10 +2040,10 @@ local Library do
                 BackgroundColor3 = FromRGB(15, 15, 20)
             })  Items["KeyButton"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Outline"})
 
-            if Library.KeyList then 
+            if Library.KeyList and Data.Flag ~= "Menu Keybind" then 
                 KeyListItem = Library.KeyList:Add(Keybind.Mode, Data.Name, Keybind.Value)
             end
-            
+                        
             Instances:Create("UIStroke", {
                 Parent = Items["KeyButton"].Instance,
                 ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
@@ -2959,7 +2959,6 @@ local Library do
             Elements = { }
         }
 
-        -- ✅ Инициализируем массив SubPages для Page, если его нет
         if not self.SubPages then
             self.SubPages = { }
         end
@@ -3051,7 +3050,7 @@ local Library do
                 BorderColor3 = FromRGB(0, 0, 0),
                 Size = UDim2New(1, 0, 1, 0),
                 BorderSizePixel = 0,
-                Visible = false,  -- ✅ По умолчанию скрыта
+                Visible = false,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
 
@@ -3111,19 +3110,16 @@ local Library do
             end
         end
 
-        -- ✅ НОВАЯ упрощенная функция Turn
         function SubPage:Turn(Bool)
             SubPage.Active = Bool
 
             if Bool then 
-                -- Показываем эту SubPage
                 Items["Subtab"].Instance.Visible = true
                 Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Accent, ImageTransparency = 0})
                 Items["Hide"].Instance.Visible = true
                 Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
                 Items["Inactive"].Instance.Size = UDim2New(1, 0, 1, 1)
             else
-                -- Скрываем эту SubPage
                 Items["Subtab"].Instance.Visible = false
                 Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Text, ImageTransparency = 0.35})
                 Items["Hide"].Instance.Visible = false
@@ -3132,15 +3128,12 @@ local Library do
             end
         end
 
-        -- ✅ Клик по кнопке SubPage
         Items["Inactive"]:Connect("MouseButton1Down", function()
-            -- Перебираем только SubPages этой Page
             for Index, Value in SubPage.Page.SubPages do
                 Value:Turn(Value == SubPage)
             end
         end)
 
-        -- ✅ Первая SubPage активна по умолчанию
         if #SubPage.Page.SubPages == 0 then 
             SubPage:Turn(true)
         end
@@ -5187,11 +5180,8 @@ local Library do
                 Library.Tween.Time = Value
             end})
         
-            SettingsSection:Button({Name = "Notification test", Callback = function()
-                Library:Notification("This is a notification This is a notification This is a notification This is a notification", 5, Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255)))
-            end})
-        
-            SettingsSection:Button({Name = "Unload library", Callback = function()
+    
+            SettingsSection:Button({Name = "Unload Cheat", Callback = function()
                 Library:Unload()
             end})
         
