@@ -1,5 +1,5 @@
 --[[
-    Made by samet
+    Made by samet & minor fixes my mishator1337
 
     Assign different flags to each element to prevent from configs overriding eachother
     Example script is at the bottom
