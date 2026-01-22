@@ -1,5 +1,5 @@
 --[[
-    Made by samet & minor fixes my mishator1337
+    Made by samet
 
     Assign different flags to each element to prevent from configs overriding eachother
     Example script is at the bottom
@@ -521,22 +521,21 @@ local Library do
             end
 
             local Gui = self.Instance
-            local Dragging = false
+            local Dragging = false 
+            local DragInput
             local DragStart
             local StartPos
 
-            local Set = function(input)
+            local function Update(input)
                 local Delta = input.Position - DragStart
-                local NewX = StartPos.X.Offset + Delta.X
-                local NewY = StartPos.Y.Offset + Delta.Y
-
-                local ScreenSize = Gui.Parent.AbsoluteSize
-                local GuiSize = Gui.AbsoluteSize
-
-                NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
-                NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
-
-                self:Tween(TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, NewX, 0, NewY)})
+                local Position = UDim2.new(
+                    StartPos.X.Scale, 
+                    StartPos.X.Offset + Delta.X,
+                    StartPos.Y.Scale, 
+                    StartPos.Y.Offset + Delta.Y
+                )
+                
+                self:Tween(TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {Position = Position})
             end
 
             self:Connect("InputBegan", function(input)
@@ -544,26 +543,28 @@ local Library do
                     Dragging = true
                     DragStart = input.Position
                     StartPos = Gui.Position
-
-                    local connection
-                    connection = input.Changed:Connect(function()
+                    
+                    input.Changed:Connect(function()
                         if input.UserInputState == Enum.UserInputState.End then
                             Dragging = false
-                            connection:Disconnect()
                         end
                     end)
                 end
             end)
 
             Library:Connect(UserInputService.InputChanged, function(input)
-                if Dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                    Set(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                    DragInput = input
                 end
             end)
 
-            return Dragging
+            Library:Connect(RunService.Heartbeat, function()
+                if Dragging and DragInput then
+                    Update(DragInput)
+                end
+            end)
         end
-        
+
         Instances.MakeResizeable = function(self, Minimum, Maximum)
             if not self.Instance then 
                 return
@@ -1356,12 +1357,7 @@ local Library do
             }) 
         end
 
-        function KeybindList:Add(Mode, Name, Key, Flag)
-            --#note : antimenu
-            if Flag == "Menu Keybind" then
-                return nil
-            end
-
+        function KeybindList:Add(Mode, Name, Key)
             local NewKey = Instances:Create("TextLabel", {
                 Parent = Items["Content"].Instance,
                 FontFace = Library.Font,
@@ -2043,6 +2039,10 @@ local Library do
                 TextSize = 14,
                 BackgroundColor3 = FromRGB(15, 15, 20)
             })  Items["KeyButton"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Outline"})
+
+            if Library.KeyList then 
+                KeyListItem = Library.KeyList:Add(Keybind.Mode, Data.Name, Keybind.Value)
+            end
             
             Instances:Create("UIStroke", {
                 Parent = Items["KeyButton"].Instance,
@@ -2159,7 +2159,7 @@ local Library do
                 TextSize = 12,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             })  Items["Always"]:AddToTheme({TextColor3 = "Text"})
-            
+             
             Instances:Create("UIStroke", {
                 Parent = Items["Always"].Instance,
                 LineJoinMode = Enum.LineJoinMode.Miter,
@@ -2179,16 +2179,9 @@ local Library do
                 KeyListItem:SetStatus(Keybind.Toggled and "Active" or "Inactive")
             end
         end
-        
-        --#note : create keylist item after Update function
-        local function CreateKeyListItem()
-            if Library.KeyList and Data.Flag ~= "Menu Keybind" then 
-                KeyListItem = Library.KeyList:Add(Keybind.Mode, Data.Name, Keybind.Value, Data.Flag)
-            end
-        end
 
         function Keybind:Get()
-        return Keybind.Toggled, Keybind.Key, Keybind.Mode 
+           return Keybind.Toggled, Keybind.Key, Keybind.Mode 
         end
 
         function Keybind:SetVisibility(Bool)
@@ -2248,16 +2241,11 @@ local Library do
 
                 Keybind.Value = TextToDisplay
                 Items["Text"].Instance.Text = TextToDisplay
-                
-                --#note : create keylist item if not exists
-                if not KeyListItem then
-                    CreateKeyListItem()
-                end
-
+    
                 if Data.Callback then 
                     Library:SafeCall(Data.Callback, Keybind.Toggled)
                 end
-        elseif TableFind({"Toggle", "Hold", "Always"}, Key) then 
+           elseif TableFind({"Toggle", "Hold", "Always"}, Key) then 
                 Keybind.Mode = Key
                 
                 Keybind:SetMode(Key)
@@ -2284,11 +2272,6 @@ local Library do
 
                 Keybind.Value = TextToDisplay
                 Items["Text"].Instance.Text = TextToDisplay
-                
-                --#note : create keylist item if not exists
-                if not KeyListItem then
-                    CreateKeyListItem()
-                end
 
                 if Keybind.Callback then 
                     Library:SafeCall(Keybind.Callback, Keybind.Toggled)
