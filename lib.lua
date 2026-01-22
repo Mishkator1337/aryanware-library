@@ -527,9 +527,11 @@ local Library do
         
             local Set = function(Input)
                 local DragDelta = Input.Position - DragStart
-                local NewX = StartPosition.X.Offset + DragDelta.X
-                local NewY = StartPosition.Y.Offset + DragDelta.Y
-
+                
+                --#note : usin abs pos
+                local NewX = StartPosition.X + DragDelta.X
+                local NewY = StartPosition.Y + DragDelta.Y
+        
                 local ScreenSize = Gui.Parent.AbsoluteSize
                 local GuiSize = Gui.AbsoluteSize
         
@@ -545,7 +547,9 @@ local Library do
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                     Dragging = true
                     DragStart = Input.Position
-                    StartPosition = Gui.Position
+                    
+                    --#note : usin abs pos x2 lol citiboi
+                    StartPosition = Gui.AbsolutePosition
         
                     if InputChanged then 
                         return
@@ -571,7 +575,6 @@ local Library do
         
             return Dragging
         end
-
         Instances.MakeResizeable = function(self, Minimum, Maximum)
             if not self.Instance then 
                 return
