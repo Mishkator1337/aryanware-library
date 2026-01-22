@@ -521,60 +521,40 @@ local Library do
             end
         
             local Gui = self.Instance
-            local Dragging = false 
+            local Dragging = false
             local DragStart
-            local StartPosition 
+            local StartPos
         
-            local Set = function(Input)
-                local DragDelta = Input.Position - DragStart
-                
-                --#note : usin abs pos
-                local NewX = StartPosition.X + DragDelta.X
-                local NewY = StartPosition.Y + DragDelta.Y
-        
-                local ScreenSize = Gui.Parent.AbsoluteSize
-                local GuiSize = Gui.AbsoluteSize
-        
-                NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
-                NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
-        
-                self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, NewX, 0, NewY)})
-            end
-        
-            local InputChanged
-        
-            self:Connect("InputBegan", function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            self:Connect("InputBegan", function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     Dragging = true
-                    DragStart = Input.Position
-                    
-                    --#note : usin abs pos x2 lol citiboi
-                    StartPosition = Gui.AbsolutePosition
+                    DragStart = input.Position
+                    StartPos = Gui.Position
         
-                    if InputChanged then 
-                        return
-                    end
-        
-                    InputChanged = Input.Changed:Connect(function()
-                        if Input.UserInputState == Enum.UserInputState.End then
+                    local connection
+                    connection = input.Changed:Connect(function()
+                        if input.UserInputState == Enum.UserInputState.End then
                             Dragging = false
-                            InputChanged:Disconnect()
-                            InputChanged = nil
+                            connection:Disconnect()
                         end
                     end)
                 end
             end)
         
-            Library:Connect(UserInputService.InputChanged, function(Input)
-                if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-                    if Dragging then
-                        Set(Input)
-                    end
+            Library:Connect(UserInputService.InputChanged, function(input)
+                if Dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    local Delta = input.Position - DragStart
+                    
+                    Gui.Position = UDim2.new(
+                        StartPos.X.Scale,
+                        StartPos.X.Offset + Delta.X,
+                        StartPos.Y.Scale,
+                        StartPos.Y.Offset + Delta.Y
+                    )
                 end
             end)
-        
-            return Dragging
         end
+        
         Instances.MakeResizeable = function(self, Minimum, Maximum)
             if not self.Instance then 
                 return
