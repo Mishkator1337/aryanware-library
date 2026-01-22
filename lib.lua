@@ -632,8 +632,6 @@ local Library do
                 CurrentSide = Side 
 
                 StartMouse = UserInputService:GetMouseLocation()
-
-                -- store offsets, not absolute screen pos
                 StartPosition = Vector2New(Gui.Position.X.Offset, Gui.Position.Y.Offset)
                 StartSize = Vector2New(Gui.Size.X.Offset, Gui.Size.Y.Offset)
                 
@@ -3046,6 +3044,7 @@ local Library do
                 BorderColor3 = FromRGB(0, 0, 0),
                 Size = UDim2New(1, 0, 1, 0),
                 BorderSizePixel = 0,
+                Visible = false,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) 
 
@@ -3105,73 +3104,37 @@ local Library do
             end
         end
 
-        local Debounce = false
-
         function SubPage:Turn(Bool)
-            if Debounce then 
-                return 
-            end
-
             SubPage.Active = Bool
-
-            Debounce = true 
 
             if Bool then 
                 Items["Subtab"].Instance.Visible = true
-
                 Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Accent, ImageTransparency = 0})
                 Items["Hide"].Instance.Visible = true
-
                 Items["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
-
                 Items["Inactive"].Instance.Size = UDim2New(1, 0, 1, 1)
             else
+                Items["Subtab"].Instance.Visible = false
                 Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Text, ImageTransparency = 0.35})
                 Items["Hide"].Instance.Visible = false
-
                 Items["Icon"]:ChangeItemTheme({ImageColor3 = "Text"})
                 Items["Inactive"].Instance.Size = UDim2New(1, 0, 1, -2)
             end
-
-            local Descendants = Items["Subtab"].Instance:GetDescendants()
-            TableInsert(Descendants, Items["Subtab"].Instance)
-
-            local NewTween
-            for Index, Value in Descendants do 
-                local ValueIndex = Library:GetTransparencyPropertyFromItem(Value)
-
-                if not ValueIndex then 
-                    continue
-                end
-
-                if type(ValueIndex) == "table" then
-                    for _, Property in ValueIndex do 
-                        NewTween = Library:FadeItem(Value, Property, Bool, SubPage.Window.FadeSpeed or 0.5)
-                    end
-                else
-                    NewTween = Library:FadeItem(Value, ValueIndex, Bool, SubPage.Window.FadeSpeed or 0.5)
-                end
-            end
-
-            Library:Connect(NewTween.Tween.Completed, function()
-                Debounce = false
-                Items["Subtab"].Instance.Visible = Bool
-            end)
         end
 
         Items["Inactive"]:Connect("MouseButton1Down", function()
-            for Index, Value in SubPage.Window.SubPages do
+            for Index, Value in SubPage.Page.SubPages do
                 Value:Turn(Value == SubPage)
             end
         end)
 
-        if #SubPage.Window.SubPages == 0 then 
+        if #SubPage.Page.SubPages == 0 then 
             SubPage:Turn(true)
         end
 
         SubPage.Elements = Items
 
-        TableInsert(SubPage.Window.SubPages, SubPage)
+        TableInsert(SubPage.Page.SubPages, SubPage)
         return setmetatable(SubPage, Library.Pages)
     end
 
@@ -3521,8 +3484,8 @@ local Library do
             end
 
             SubItems["Inactive"]:Connect("MouseButton1Down", function()
-                for Index, Value in MultiSection.SectionContents do
-                    Value:Turn(Value == NewSection)
+                for Index, Value in SubPage.Page.SubPages do
+                    Value:Turn(Value == SubPage)
                 end
             end)
 
